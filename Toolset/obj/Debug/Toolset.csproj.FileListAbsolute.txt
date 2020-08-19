@@ -1,0 +1,6 @@
+C:\Users\Czone\source\repos\Nodes\Toolset\bin\Debug\Toolset.dll
+C:\Users\Czone\source\repos\Nodes\Toolset\bin\Debug\Toolset.pdb
+C:\Users\Czone\source\repos\Nodes\Toolset\obj\Debug\Toolset.csprojAssemblyReference.cache
+C:\Users\Czone\source\repos\Nodes\Toolset\obj\Debug\Toolset.csproj.CoreCompileInputs.cache
+C:\Users\Czone\source\repos\Nodes\Toolset\obj\Debug\Toolset.dll
+C:\Users\Czone\source\repos\Nodes\Toolset\obj\Debug\Toolset.pdb

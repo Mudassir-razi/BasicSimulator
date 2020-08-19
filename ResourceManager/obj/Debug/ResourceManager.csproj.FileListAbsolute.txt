@@ -1,0 +1,9 @@
+C:\Users\Czone\source\repos\Nodes\ResourceManager\bin\Debug\ResourceManager.dll
+C:\Users\Czone\source\repos\Nodes\ResourceManager\bin\Debug\ResourceManager.pdb
+C:\Users\Czone\source\repos\Nodes\ResourceManager\obj\Debug\ResourceManager.csprojAssemblyReference.cache
+C:\Users\Czone\source\repos\Nodes\ResourceManager\obj\Debug\ResourceManager.csproj.GenerateResource.cache
+C:\Users\Czone\source\repos\Nodes\ResourceManager\obj\Debug\ResourceManager.csproj.CoreCompileInputs.cache
+C:\Users\Czone\source\repos\Nodes\ResourceManager\obj\Debug\ResourceManager.dll
+C:\Users\Czone\source\repos\Nodes\ResourceManager\obj\Debug\ResourceManager.pdb
+C:\Users\Czone\source\repos\Nodes\ResourceManager\obj\Debug\ResourceManager.SymbolListFile.resources
+C:\Users\Czone\source\repos\Nodes\ResourceManager\obj\Debug\ResourceManager.g.resources
