@@ -45,16 +45,14 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CircuitError.cs" />
     <Compile Include="Component.cs" />
+    <Compile Include="SimulationHandler.cs" />
     <Compile Include="SystemGrid.cs" />
     <Compile Include="VisualGrid.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ResourceManager\ResourceManager.csproj">
-      <Project>{8bcb1bd0-7123-44a3-a31f-3c41236a9b95}</Project>
-      <Name>ResourceManager</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Toolset\Toolset.csproj">
       <Project>{3eca0aa4-02da-4551-80f7-3b51d3e0ddc8}</Project>
       <Name>Toolset</Name>

@@ -74,6 +74,8 @@ namespace Toolset
         {
             s.Trim();
 
+            if (s.Length == 0) return 0;
+
             if (!double.TryParse(s, out double val))
             {
                 //not a plain number
@@ -153,6 +155,24 @@ namespace Toolset
             return Matrix_X;
         }
 
+        /// <summary>
+        /// Populates a two dimensional array with a given value
+        /// </summary>
+        /// <typeparam name="T">typf of array</typeparam>
+        /// <param name="array">array to be populated</param>
+        /// <param name="value">value to populate with</param>
+        /// <param name="row">number of row in array</param>
+        /// <param name="col">number of columns in array</param>
+        public static void PopulateArray<T>(this T[,] array, T value, int row, int col)
+        {
+            for (int i = 0; i < row; i++)
+            {
+                for(int j = 0;j < col;j++)
+                {
+                    array[i, j] = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Populates a new one dimensional array with a given value

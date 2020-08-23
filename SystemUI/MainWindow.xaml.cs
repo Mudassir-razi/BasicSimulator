@@ -6,12 +6,17 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using Caliburn.Micro;
 using Grid;
 using Toolset;
+using ResourceManager;
+using System.Windows.Controls.DataVisualization;
+using Xceed.Wpf.Toolkit.PropertyGrid;
+using System.Threading;
 
 namespace SystemUI
 {
@@ -19,30 +24,29 @@ namespace SystemUI
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
-    { 
+    {
         Canvas canvas;
         public ObservableCollection<Grid.Component> tc;
-
+        public SimInformer Log;
         public MainWindow()
         {
+            //splash screen
+            //StartUpSplash splash = new StartUpSplash();
+            //splash.Show();
+            
+            //main code
             InitializeComponent();
+            
             this.WindowState = WindowState.Maximized;
             this.Title = "Node";
-            this.DataContext = this;
-
-            //testing
-            tc = new ObservableCollection<Grid.Component>(SystemGrid.ComponentGrid.Values);
-            this.TestDataGrid.ItemsSource = tc;
-
-
-            ComponentManager.LoadSymbols();
-
+            ComponentSymbols.LoadSymbols();
+            Log = SystemGrid.Informer;
 
             ConsoleManager.Show();
             try
             {
-                canvas = VisualGridManager.GenerateGrid();
-                VisualGridManager.SetStatusIndicator(this.Status);
+                canvas = VisualGrid.GenerateGrid();
+                VisualGrid.SetStatusIndicator(this.Status);
                 ParentCanvas.Children.Add(canvas);
             }
             catch (InvalidCanvasSizeExeption e)
@@ -54,43 +58,49 @@ namespace SystemUI
             ComponentManager.schematicsCanvas = canvas;
             //databinding
             this.ComponentSelector.ItemsSource = ComponentManager.GetSymbolList();
+            this.Output.ItemsSource = Log.GetInfo();
+
 
             //adding functions
+            VisualGrid.SelectedObjectChanged += PropertyGridSelectionChange;
             this.ComponentSelector.SelectionChanged += ComponentSelector_SelectionChanged;
             this.canvas.MouseWheel += Canvas_MouseWheel;
             this.canvas.MouseMove += Canvas_MouseMove;
             this.canvas.MouseLeftButtonDown += Canvas_MouseLeftButtonDown;
             this.ParentCanvas.MouseWheel += ParentCanvas_MouseWheel;
             this.KeyDown += KeyBoarInputPreview;
-
             //test
             this.Button_Simulate.Click += Test_Click;
+
+            //end splash
+            //Thread.Sleep(2000);
+            //splash.Close();
         }
 
 
         //test
         private void Test_Click(object sender, RoutedEventArgs e)
         {
-            SystemGrid.DebugGridInfo();
+            SystemGrid.AttemptSimulation();
         }
 
         //when leftclick on canvas
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            VisualGridManager.currentState.OnMouseClick(e);
+            VisualGrid.currentState.OnMouseClick(e);
         }
 
         //when mouse moves over the canvas
         private void Canvas_MouseMove(object sender, MouseEventArgs e)
         {
-            VisualGridManager.currentState.OnMouseMove(e);
+            VisualGrid.currentState.OnMouseMove(e);
         }
 
         //takes keyboard input
         private void KeyBoarInputPreview(object sender, KeyEventArgs e)
         {
             //VisualGridManager.Pan(e);
-            VisualGridManager.currentState.OnKeyBoardEvent(e);
+            VisualGrid.currentState.OnKeyBoardEvent(e);
         }
 
         //does the same thing with parent canvas
@@ -103,20 +113,20 @@ namespace SystemUI
         private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             //control if pressed it zooms in or out.
-            if (Keyboard.IsKeyDown(Key.LeftCtrl)) VisualGridManager.ZoomInOut(e.Delta);
+            if (Keyboard.IsKeyDown(Key.LeftCtrl)) VisualGrid.ZoomInOut(e.Delta);
 
             //pan while holding alter
-            else VisualGridManager.Pan(e.Delta, Keyboard.IsKeyDown(Key.LeftAlt));
+            else VisualGrid.Pan(e.Delta, Keyboard.IsKeyDown(Key.LeftAlt));
         }
 
 
         //check it later
         private void ComponentSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            VisualGridManager.ChangeState(typeof(ComponentState));
-            if(VisualGridManager.currentState.GetType() == typeof(ComponentState))
+            VisualGrid.ChangeState(typeof(ComponentState));
+            if (VisualGrid.currentState.GetType() == typeof(ComponentState))
             {
-                ComponentState cs = (ComponentState)VisualGridManager.currentState;
+                ComponentState cs = (ComponentState)VisualGrid.currentState;
                 cs.ComponentType = (Type)ComponentSelector.SelectedItem;
                 cs.CreateTemporaryComp_Visual();
             }
@@ -134,41 +144,46 @@ namespace SystemUI
             this.OverlayRect3.Fill = br;
         }
 
-        private void updateDataGrid_Click(object sender, RoutedEventArgs e)
-        {
-            if(SystemGrid.ComponentGrid.Count > 0)
-            {
-                
-            }
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
         void OnPropertyChanged([CallerMemberName] string PropertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(PropertyName));
         }
 
-    }
-
-    public class TestClass
-    {
-        int id;
-
-        public int Id
+        //test
+        private void Button_VoltageProbe_Click(object sender, RoutedEventArgs e)
         {
-            get { return id; }
-            set { if (value != id) id = value; }
+            VisualGrid.currentState.OnVoltageProbe();
         }
 
-        string name;
-        public string Name
+        public void PropertyGridSelectionChange(object o)
         {
-            get { return name; }
-            set { if (name != value) name = value; }
+            this.PropertyViewer.SelectedObject = o;
         }
 
-        public TestClass(int i, string n) { id = i;name = n; }
+        private void Slider_vertical_Scroll(object sender, System.Windows.Controls.Primitives.ScrollEventArgs e)
+        {
+           
+        }
 
+        private void Button_simulationSetting_Click(object sender, RoutedEventArgs e)
+        {
+            SimulationSettingWindow simWindow = new SimulationSettingWindow();
+            simWindow.Show();
+        }
+
+        private void Button_simulationOutput_Click(object sender, RoutedEventArgs e)
+        {
+            SimulationOutput outputWin = new SimulationOutput();
+            outputWin.Show();
+        }
+
+        private void Button_CurrentProbe_Click(object sender, RoutedEventArgs e)
+        {
+            VisualGrid.currentState.OnCurrentProbe();
+        }
     }
+
+
 
 }

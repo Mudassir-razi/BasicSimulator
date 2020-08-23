@@ -4,8 +4,10 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SystemUI"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Icon="pack://application:,,,/ResourceManager;component/Resources/meme1.png"
+        RenderOptions.EdgeMode="Aliased"
+        Icon="pack://application:,,,/ResourceManager;component/Resources/netLogo2.ico"
         Title="Node" Height="450" Width="800">
     <Window.Resources>
         
@@ -37,49 +39,61 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="20"/>
             <RowDefinition Height="20"/>
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="120"/>
             <!--End border-->
             <RowDefinition Height="10"/>
         </Grid.RowDefinitions>
 
         <!--Parent canvas-->
-        <Canvas x:Name="ParentCanvas" Grid.Row="3" Grid.Column="1" Grid.RowSpan="1" Grid.ColumnSpan="7" >
+        <Canvas x:Name="ParentCanvas" Grid.Row="3" Grid.Column="1" Grid.RowSpan="1" Grid.ColumnSpan="7" Background="#202024" >
             
         </Canvas>
         
         <!--Overlay recangles-->
-        <Rectangle x:Name="OverlayRect0" Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Grid.ColumnSpan="11" Margin="0,0,0,-5" Fill="#1c2636"/>
-        <Rectangle x:Name="OverlayRect1" Grid.Row="4"  Grid.Column="0" Grid.RowSpan="4" Grid.ColumnSpan="12" Fill="#1c2636"/>
-        <Rectangle x:Name="OverlayRect2" Grid.Row="2" Grid.Column="0" Grid.RowSpan="4" Fill="#1c2636"/>
-        <Rectangle x:Name="OverlayRect3" Grid.Row="0" Grid.Column="8" Grid.RowSpan="5" Grid.ColumnSpan="4" Fill="#1c2636"/>
+        <Rectangle x:Name="OverlayRect0" Grid.Row="0" Grid.Column="0" Grid.RowSpan="3" Grid.ColumnSpan="11" Margin="0,0,0,-5" Fill="#282828"/>
+        <Rectangle x:Name="OverlayRect1" Grid.Row="4"  Grid.Column="0" Grid.RowSpan="4" Grid.ColumnSpan="12" Fill="#282828"/>
+        <Rectangle x:Name="OverlayRect2" Grid.Row="2" Grid.Column="0" Grid.RowSpan="4" Fill="#282828"/>
+        <Rectangle x:Name="OverlayRect3" Grid.Row="0" Grid.Column="8" Grid.RowSpan="5" Grid.ColumnSpan="4" Fill="#282828"/>
         <!--End rects-->
 
         <!--Menu items-->
         <ComboBox x:Name="ComponentSelector" ToolTip="Search component" Background="#282828" Grid.Row="2" Grid.Column="3" Margin="5">
  
         </ComboBox>
-        <TextBlock x:Name="Output" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,5,0,0" ScrollViewer.HorizontalScrollBarVisibility="Visible" Background="DarkGray"/>
+        <ListBox x:Name="Output" Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" FontFamily="Lucida console" Margin="0,5,0,0" Background="Gray"/>
         <TextBlock x:Name="Status" Text="{Binding Text, ElementName=tempTbox, UpdateSourceTrigger=PropertyChanged}" Grid.Row="6" Grid.Column="3" Grid.ColumnSpan="5" Margin="5,5,0,0" Background="DarkGray"/>
-        <Button x:Name="Button_Simulate" ToolTip="Start simulation" Background="#282828" Grid.Row="2" Grid.Column="4" Margin="5">
+        <Button x:Name="Button_Simulate" ToolTip="Start simulation" Background="#282828" Grid.Row="2" Grid.Column="4">
             <Image Stretch="UniformToFill" Source="pack://application:,,,/ResourceManager;component/Resources/simulateButtonIconDark.png"/>
         </Button>
-        <Button x:Name="Button_VoltageProbe" ToolTip="Add voltage probe" Background="#282828" Grid.Row="2" Grid.Column="5" Margin="5">
+        <Button x:Name="Button_VoltageProbe" ToolTip="Add voltage probe" Click="Button_VoltageProbe_Click" Background="#282828" Grid.Row="2" Grid.Column="5">
             <Image Stretch="UniformToFill" Source="pack://application:,,,/ResourceManager;component/Resources/voltageProbeIcon.png"/>
         </Button>
-        <Button x:Name="Button_CurrentProbe" ToolTip="Add current probe" Background="#282828" Grid.Row="2" Grid.Column="6" Margin="5">
+        <Button x:Name="Button_CurrentProbe" ToolTip="Add current probe" Click="Button_CurrentProbe_Click" Background="#282828" Grid.Row="2" Grid.Column="6">
             <Image Stretch="UniformToFill" Source="pack://application:,,,/ResourceManager;component/Resources/currentProbeIco.png"/>
         </Button>
+        <Button x:Name="Button_simulationSetting" Click="Button_simulationSetting_Click" Grid.Row="2" Grid.Column="2" Margin="5" Content="Simulation setting"/>
+        <Button x:Name="Button_simulationOutput" Click="Button_simulationOutput_Click"  Grid.Row="1" Grid.Column="2" Margin="5" Content="Simulation output"/>
+        
         <ProgressBar x:Name="SimProgress" ToolTip="Simulation progress" Grid.Row="5" Grid.Column="5" Grid.ColumnSpan="3" Margin="1" Minimum="0" Maximum="100"/>
-        <ScrollBar x:Name="Slider_vertical" Minimum="0" Maximum="5" Value="5" Grid.Row="3" Grid.Column="8" Margin="5"/>
+        <ScrollBar x:Name="Slider_vertical" Minimum="0" Maximum="5" Value="5" Grid.Row="3" Grid.Column="8" Background="#303030" Scroll="Slider_vertical_Scroll" Margin="5"/>
+        <ToggleButton x:Name="Toggle_voltage" Grid.Row="2" Grid.Column="7" Content="V"/>
+        <ToggleButton x:Name="Toggle_current" Grid.Row="2" Grid.Column="8" Content="I"/>
+
         <!--End menu items-->
         <!--Data table-->
-        <DataGrid x:Name="TestDataGrid" Grid.Row="3"  Grid.Column="9" Grid.ColumnSpan="2" Margin="5" Background="Bisque">
-            
-        </DataGrid>
-        
-        <!--Testing,experimenting-->
-        <TextBox x:Name="tempTbox" Grid.Row="6" Grid.Column="10" Margin="10"/>
-        <Button x:Name="testButton" Grid.Row="5" Grid.Column="8" Content="K" Margin="5,0,5,0" Click="updateDataGrid_Click"/>
 
+        <!--Testing,experimenting-->
+        <TabControl Grid.Row="3" Grid.Column="9" Grid.ColumnSpan="2" Background="#282828">
+            <TabItem Header="Property">
+                <Grid>
+                    <xctk:PropertyGrid x:Name="PropertyViewer" Background="#282828" Grid.Row="2" Grid.Column="9" Grid.ColumnSpan="2">
+
+                    </xctk:PropertyGrid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Hierarchy">
+
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>
