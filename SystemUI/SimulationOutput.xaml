@@ -1,0 +1,53 @@
+﻿<Window x:Class="SystemUI.SimulationOutput"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:DVC="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
+        mc:Ignorable="d"
+        Title="Simulation Output" Height="450" Width="800" Background="#282828">
+    <Window.Resources>
+        <ResourceDictionary>
+            <Style x:Key="CommonLineSeriesDataPoint" TargetType="DVC:LineDataPoint">
+                <Setter Property="IndependentValueStringFormat" Value="{}{0:yyyy}" />
+                <Setter Property="DependentValueStringFormat" Value="{}{0:c0}" />
+                <Setter Property="Background" Value="#282828" />
+                
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="IsTabStop" Value="False" />
+                <Setter Property="Opacity" Value="0"/>
+            </Style>
+
+            <Style x:Key="CommonLineSeriesPolyline" TargetType="Polyline">
+                <Setter Property="StrokeThickness" Value="1" />
+            </Style>
+
+            <Style x:Key="lineStyle1" TargetType="DVC:LineSeries">
+                <Setter Property="DataPointStyle" Value="{StaticResource CommonLineSeriesDataPoint}"/>
+                <Setter Property="PolylineStyle" Value="{StaticResource CommonLineSeriesPolyline}"/>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="10" />
+            <ColumnDefinition Width="120" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="10" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="10"/>
+        </Grid.RowDefinitions>
+
+        <Canvas x:Name="plotHolder" Grid.Row="2" Grid.Column="2" >
+            <DVC:Chart x:Name="plot" Height="{Binding ElementName=plotHolder, Path=ActualHeight}" Foreground="Black" 
+                        Width="{Binding ElementName=plotHolder, Path=ActualWidth}" Background="#303030">
+            </DVC:Chart>
+        </Canvas>
+
+    </Grid>
+</Window>
