@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -14,9 +14,10 @@ using System.Windows.Shapes;
 
 namespace Grid
 {
+    //This handles the placement, editing and deletion of component.
     public static class ComponentManager
     {
-        public static Canvas schematicsCanvas = VisualGrid.CurrentCanvas;
+        public static Canvas schematicsCanvas = VisualGrid.CurrentCanvas;   //the canvas to draw on
         public static int _ShiftX = -20;
         public static  int _ShiftY = -30;
 
@@ -46,6 +47,16 @@ namespace Grid
             else if(T == typeof(Capacitor))
             {
                 new Capacitor(val, pX, pY, rot, r);
+            }
+
+            else if(T == typeof(Inductor))
+            {
+                new Inductor(val, pX, pY, rot, r);
+            }
+
+            else if(T == typeof(VoltageSinusoid))
+            {
+                new VoltageSinusoid(val, pX, pY, rot, r);
             }
 
             else if(T == typeof(GND))
@@ -84,6 +95,19 @@ namespace Grid
             VoltageSource.ResetAllIndices();
             CurrentSource.ResetAllIndices();
             Capacitor.ResetAllIndices();
+            Inductor.ResetAllIndices();
+            VoltageSinusoid.ResetAllIndices();
+        }
+
+        /// <summary>
+        /// Resets all calculated value (voltage and current) of components to default for all components.
+        /// </summary>
+        public static void ResetAllCalculatedValues()
+        {
+            foreach(Component comp in SystemGrid.ComponentGrid.Values)
+            {
+                comp.ResetALLCalculatedValues();
+            }
         }
 
     }
@@ -347,6 +371,17 @@ namespace Grid
         /// </summary>
         /// <returns>a string of their calculated vales</returns>
         public virtual string GetCalculatedInfo() { return VoltageAccross.ToString() + " " + CurrentThrough.ToString(); }
+
+        /// <summary>
+        /// Resets voltage_across and current through to zero
+        /// Called when starting a simulation to override previous calculated values
+        /// </summary>
+        public virtual void ResetALLCalculatedValues()
+        {
+            VoltageAccross = 0;
+            CurrentThrough = 0;
+        }
+
         #endregion
     }
 
@@ -368,7 +403,6 @@ namespace Grid
         }
 
         #region overrides
-
         public override void Modify_G_Matrix(double[,] m)
         {
             int _posNet = SystemGrid.MainGrid[PinPos].Net - 1;
@@ -448,6 +482,7 @@ namespace Grid
             ComponentManager.schematicsCanvas.Children.Add(label);
         }
 
+        #region Overrides
         public override void SetIndex()
         {
             index = _indexer;
@@ -503,6 +538,8 @@ namespace Grid
             return _Counter;
         }
 
+        #endregion
+
         public static void ResetAllIndices()
         {
             _indexer = 0;
@@ -513,7 +550,7 @@ namespace Grid
     public class CurrentSource : Component
     {
         //netlist name prefix of the component
-        public static string NamePrefix = "I";
+        static string NamePrefix = "I";
         //count objects instantiated of this type
         static int _Counter = 0;
         //stuff for indexing
@@ -527,7 +564,16 @@ namespace Grid
             ComponentManager.schematicsCanvas.Children.Add(label);
         }
 
-        public override void SetIndex()
+        //Constructor used by child classes for their name prefix
+        public CurrentSource(double val, int posX, int posY, int rot, int count, string NPrefix, Rectangle r) : base(val, posX, posY, rot, r)
+        {
+            _name = NPrefix + count.ToString();
+            label = SetName(_name, val, posX, posY);
+            ComponentManager.schematicsCanvas.Children.Add(label);
+        }
+
+    #region Overrides
+    public override void SetIndex()
         {
             index = _indexer;
             _indexer++;
@@ -568,6 +614,8 @@ namespace Grid
             return _Counter;
         }
 
+        #endregion
+
         public static void ResetAllIndices()
         {
             _indexer = 0;
@@ -596,6 +644,197 @@ namespace Grid
         {
             _ic = 0;
             _Counter++;
+        }
+
+        #region Overrides
+        public override void SetIndex()
+        {
+            index = _indexer;
+            _indexer++;
+            B_matIndex = index + base.GetParentOffset();
+            C_matIndex = B_matIndex;
+            X_matIndex = base.GetParentOffset() + SystemGrid.NodeCount + index;
+            Z_matIndex = X_matIndex;
+        }
+
+        public override void Modify_B_Matrix(double[,] m)
+        {
+            base.Modify_B_Matrix(m);
+        }
+
+        public override void Modify_C_Matrix(double[,] m)
+        {
+            base.Modify_C_Matrix(m);
+        }
+
+        public override void Modify_Z_Matrix(double[] m)
+        {
+            m[Z_matIndex] += VoltageAccross;
+        }
+
+        public override void SetCalculatedInfo()
+        {
+            CurrentThrough = SystemGrid.solutionMatrix[X_matIndex];
+        }
+
+        public override string GetCalculatedInfo()
+        {
+            return base.GetCalculatedInfo();
+        }
+
+        public override void UpdateValues()
+        {
+            VoltageAccross += (CurrentThrough / PrimaryValue) * SystemGrid.TimeSpace;
+            Console.WriteLine("Voltage: "+ VoltageAccross.ToString());
+            Console.WriteLine("Current " + CurrentThrough.ToString());
+        }
+
+        public override void Disconnect()
+        {
+            base.Disconnect();
+            _Counter--;
+        }
+
+        public override int GetParentOffset()
+        {
+            return _Counter + base.GetParentOffset();
+        }
+        #endregion
+
+        public static new void ResetAllIndices()
+        {
+            _indexer = 0;
+        }
+
+    }
+
+    public class Inductor : CurrentSource
+    {
+        //initial condition
+        protected double _ic;
+        static readonly string NamePrefix = "L";
+        static int _Counter;
+        static int _indexer = 0;
+        public double IC
+        {
+            get { return _ic; }
+            set
+            {
+                _ic = value;
+                CurrentThrough = _ic;
+                OnPropertyChanged("IC");
+            }
+        }
+
+        public Inductor(double val, int posX, int posY, int rot, Rectangle r) : base(val, posX, posY, rot, _Counter + 1, NamePrefix, r) 
+        {
+            _ic = 0;
+            _Counter++;
+        }
+
+        #region Overrides
+        public override void SetIndex()
+        {
+            index = _indexer;
+            _indexer++;
+            B_matIndex = index + base.GetParentOffset();
+            C_matIndex = B_matIndex;
+            X_matIndex = base.GetParentOffset() + index;
+            Z_matIndex = X_matIndex;
+        }
+
+        public override void Modify_Z_Matrix(double[] m)
+        {
+            int _posNet = SystemGrid.MainGrid[PinPos].Net;
+            int _NegNet = SystemGrid.MainGrid[PinNeg].Net;
+
+            if (_posNet > 0) m[_posNet - 1] -= CurrentThrough;
+            if (_NegNet > 0) m[_NegNet - 1] += CurrentThrough;
+        }
+
+        public override void SetCalculatedInfo()
+        {
+            int _posNet = SystemGrid.MainGrid[PinPos].Net;
+            int _NegNet = SystemGrid.MainGrid[PinNeg].Net;
+
+            double vP = _posNet > 0 ? SystemGrid.solutionMatrix[_posNet - 1] : 0;
+            double vN = _NegNet > 0 ? SystemGrid.solutionMatrix[_NegNet - 1] : 0;
+            VoltageAccross = vP - vN;
+            Console.WriteLine("Voltage: " + VoltageAccross.ToString());
+        }
+
+        public override void UpdateValues()
+        {
+            CurrentThrough += (VoltageAccross / PrimaryValue) * SystemGrid.TimeSpace;
+            Console.WriteLine("current: " + CurrentThrough.ToString());
+        }
+
+        public override void Disconnect()
+        {
+            base.Disconnect();
+        }
+
+        public override string GetCalculatedInfo()
+        {
+            return base.GetCalculatedInfo();
+        }
+
+        public override void ResetALLCalculatedValues()
+        {
+            base.ResetALLCalculatedValues();
+        }
+
+        #endregion
+        public static new void ResetAllIndices()
+        {
+            _indexer = 0;
+        }
+
+    }
+
+    public class VoltageSinusoid : VoltageSource
+    {
+        static string NamePrefix = "Vsin";
+        static int _Counter = 0;
+        static int _indexer = 0;
+
+        double _freq;
+        double _phase;
+        double _t;
+
+        //UI interaction
+        [DisplayName("Frequency")]
+        public double Freq
+        {
+            get { return _freq; }
+            set
+            {
+                _freq = value;
+                OnPropertyChanged("Freq");
+            }
+        }
+
+        [DisplayName("Phase")]
+        public double Phs
+        {
+            get { return _phase; }
+            set
+            {
+                _phase = value;
+                OnPropertyChanged("Phs");
+            }
+        }
+
+        public VoltageSinusoid(double val, int posX, int posY, int rot, Rectangle r) : base(val, posX, posY, rot, _Counter + 1, NamePrefix, r)
+        {
+            _Counter++;
+            _t = 0;
+        }
+
+        public override void Disconnect()
+        {
+            base.Disconnect();
+            _Counter--;
         }
 
         public override void SetIndex()
@@ -635,19 +874,13 @@ namespace Grid
 
         public override void UpdateValues()
         {
-            VoltageAccross += (CurrentThrough / PrimaryValue) * SystemGrid.TimeSpace;
-            Console.WriteLine(VoltageAccross);
-        }
-
-        public override void Disconnect()
-        {
-            base.Disconnect();
-            _Counter--;
+            VoltageAccross = PrimaryValue * Math.Sin((2 * Math.PI * _freq * _t + _phase/57.29));
+            _t += SystemGrid.dTime;
         }
 
         public override int GetParentOffset()
         {
-            return _Counter + base.GetParentOffset();
+            return base.GetParentOffset() + _Counter;
         }
 
         public static new void ResetAllIndices()
@@ -655,15 +888,6 @@ namespace Grid
             _indexer = 0;
         }
 
-    }
-
-    public class Inductor : Component
-    {
-        //static string NamePrefix = "L";
-        public Inductor(double val, int posX, int posY, int rot, Rectangle r) : base(val, posX, posY, rot, r) 
-        {
-
-        }
     }
 
     public class GND
